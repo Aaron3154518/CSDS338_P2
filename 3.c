@@ -1,29 +1,30 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
 	const int N = 10;
 
-	int* mallocPtr = malloc(N * i);
-	int* callocPtr = calloc(N * i);
+	int* mallocPtr = malloc(N * sizeof(int));
+	int* callocPtr = calloc(N, sizeof(int));
 
-	bool mallocIsInit = true, callocIsInit = true;
+	int mallocIsInit = 1, callocIsInit = 1;
 	for (int off = 0; off < N; off++) {
 		if (*(mallocPtr + off) != 0) {
-			mallocIsInit = false;
+			mallocIsInit = 0;
 		}
 		if (*(callocPtr + off) != 0) {
-			callocIsInit = false;
+			callocIsInit = 0;
 		}
 	}
 
 	free(mallocPtr);
 	free(callocPtr);
 
-	printf("Malloc %s perform initialization", mallocIsInit ? "did" : "did not");
-	printf("Calloc %s perform initialization", callocIsInit ? "did" : "did not");
-	printf("Malloc and calloc are %s", mallocIsInit && callocIsInit ? "the same" : "different");
-	if (!mallocIsInit && !callocIsInit) {
-		printf("Neither malloc nor calloc performed initialization");
+	printf("Malloc %s perform initialization\n", mallocIsInit == 1 ? "did" : "did not");
+	printf("Calloc %s perform initialization\n", callocIsInit == 1 ? "did" : "did not");
+	printf("Malloc and calloc are %s\n", mallocIsInit == 1 && callocIsInit == 1 ? "the same" : "different");
+	if (mallocIsInit == 0 && callocIsInit == 0) {
+		printf("Neither malloc nor calloc performed initialization\n");
 	}
 
 	return 0;
