@@ -2,37 +2,49 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
+#include <sys/user.h>
 
-#define N 100000000 // 10 million
+#define N 100000000 // 100 million
 
-void printMemory();
+void getMemory(int* virt, int* phys);
 
 int main() {
+    printf("%d\n", PAGE_SIZE);
+    int virt = 0, phys = 0;
 
     printf("Initially:\n");
-    printMemory();
+    getMemory(&virt, &phys);
+    printf("Virtual Memory: %dkB\nPhysical Memory: %dkB\n", virt, phys);
 
-    int* i = malloc(N * sizeof(i));
+    int* i = malloc(N * sizeof(int));
 
     printf("\nAfter Malloc:\n");
-    printMemory();
+    getMemory(&virt, &phys);
+    printf("Virtual Memory: %dkB\nPhysical Memory: %dkB\n", virt, phys);
 
     for (int j = 0; j < N; j++) {
         i[j] = j;
     }
 
     printf("\nAfter Writing to Array:\n");
-    printMemory();
+    getMemory(&virt, &phys);
+    printf("Virtual Memory: %dkB\nPhysical Memory: %dkB\n", virt, phys);
 
     free(i);
 
     printf("\nAfter Free():\n");
-    printMemory();
+    getMemory(&virt, &phys);
+    printf("Virtual Memory: %dkB\nPhysical Memory: %dkB\n", virt, phys);
+
+    checkSize();
 
     return 0;
 }
 
-void printMemory() {
+void getMemory(int* virt, int* phys) {
+    *virt = *phys = 0;
+
     pid_t pid = getpid();
 
     // Open the maps file for this process
@@ -46,13 +58,9 @@ void printMemory() {
         while (fgets(line, sizeof(line), statusFile) != NULL) {
             char* pos;
             if ((pos = strstr(line, "VmRSS")) != NULL) {
-                int size;
-                sscanf(pos, "%*s%d", &size);
-                printf("Physical Memory: %dkB\n", size);
+                sscanf(pos, "%*s%d", phys);
             } else if ((pos = strstr(line, "VmSize")) != NULL) {
-                int size;
-                sscanf(pos, "%*s%d", &size);
-                printf("Virtual Memory: %dkB\n", size);
+                sscanf(pos, "%*s%d", virt);
             }
         }
 
