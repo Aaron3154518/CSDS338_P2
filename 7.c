@@ -7,7 +7,7 @@ int main() {
 	*i = malloc(sizeof(int));
 	**i = 42;
 
-	printf("Val: %x at %x -> Val: %x at %x -> Val: %d at %x\n",
+	printf("i\tLocation = %x, Val = %x\n*i\tLocation = %x, Val = %x\n**i\tLocation = %x, Val = %d\n",
 			&i, i, i, *i, *i, **i);
 
 	return 0;
