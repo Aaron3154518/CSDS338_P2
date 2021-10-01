@@ -7,7 +7,7 @@ int main() {
     printf("Type Words: ");
     fflush(stdout);
 
-    gets(input);
+    scanf("%[^\n]", input);
 
     printf("Printing every 3rd word:\n");
 
