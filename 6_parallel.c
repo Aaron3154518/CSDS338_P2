@@ -36,7 +36,6 @@ int main()
     pid_t pid1, pid2;
 
     // Create two cpu masks that will make our children run on CPU 1 and 2, repectively
-    // Source: https://stackoverflow.com/questions/280909/how-to-set-cpu-affinity-for-a-process-from-c-or-c-in-linux
     cpu_set_t mask1, mask2;
     CPU_ZERO(&mask1);
     CPU_SET(0, &mask1);
