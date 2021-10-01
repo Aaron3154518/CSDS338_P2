@@ -2,30 +2,30 @@
 #include <stdlib.h>
 
 int main() {
-	const int N = 10;
+    const int N = 10;
 
-	int* mallocPtr = malloc(N * sizeof(int));
-	int* callocPtr = calloc(N, sizeof(int));
+    int* mallocPtr = malloc(N * sizeof(int));
+    int* callocPtr = calloc(N, sizeof(int));
 
-	int mallocIsInit = 1, callocIsInit = 1;
-	for (int off = 0; off < N; off++) {
-		if (*(mallocPtr + off) != 0) {
-			mallocIsInit = 0;
-		}
-		if (*(callocPtr + off) != 0) {
-			callocIsInit = 0;
-		}
-	}
+    int mallocIsInit = 1, callocIsInit = 1;
+    for (int off = 0; off < N; off++) {
+        if (*(mallocPtr + off) != 0) {
+            mallocIsInit = 0;
+        }
+        if (*(callocPtr + off) != 0) {
+            callocIsInit = 0;
+        }
+    }
 
-	free(mallocPtr);
-	free(callocPtr);
+    free(mallocPtr);
+    free(callocPtr);
 
-	printf("Malloc %s perform initialization\n", mallocIsInit == 1 ? "did" : "did not");
-	printf("Calloc %s perform initialization\n", callocIsInit == 1 ? "did" : "did not");
-	printf("Malloc and calloc are %s\n", mallocIsInit == 1 && callocIsInit == 1 ? "the same" : "different");
-	if (mallocIsInit == 0 && callocIsInit == 0) {
-		printf("Neither malloc nor calloc performed initialization\n");
-	}
+    printf("Malloc %s perform initialization\n", mallocIsInit == 1 ? "did" : "did not");
+    printf("Calloc %s perform initialization\n", callocIsInit == 1 ? "did" : "did not");
+    printf("Malloc and calloc are %s\n", mallocIsInit == 1 && callocIsInit == 1 ? "the same" : "different");
+    if (mallocIsInit == 0 && callocIsInit == 0) {
+        printf("Neither malloc nor calloc performed initialization\n");
+    }
 
-	return 0;
+    return 0;
  }
