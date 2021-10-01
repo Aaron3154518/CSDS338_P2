@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main() {
-    const int N = 10;
+#define N 1000000 // 1 million
 
+int main() {
     int* mallocPtr = malloc(N * sizeof(int));
     int* callocPtr = calloc(N, sizeof(int));
 
