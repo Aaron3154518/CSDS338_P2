@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <sys/user.h>
 
 #define N 1000000 // 1 million
 #define MAX_DELTAS 50

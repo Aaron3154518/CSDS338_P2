@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <limits.h>
-#include <sys/user.h>
 
 #define N 100000000 // 100 million
 
