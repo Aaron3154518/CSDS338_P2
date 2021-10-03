@@ -10,7 +10,7 @@
 
 struct Process {
     char task[255];
-	long tLeft; // ns
+    long tLeft; // ns
     int prio;
 };
 
@@ -110,68 +110,68 @@ void clean(struct QueueList* qList) {
 }
 
 struct Process* newProcess(char* task, long tLeft, int prio) {
-	struct Process* res = malloc(sizeof(struct Process));
-	strcpy(res->task, task);
-	res->tLeft = tLeft;
-	res->prio = prio;
-	return res;
+    struct Process* res = malloc(sizeof(struct Process));
+    strcpy(res->task, task);
+    res->tLeft = tLeft;
+    res->prio = prio;
+    return res;
 }
 
 // Using insertion sort because I want to maintain original order amongst pTimes values
 void sortSchedule(int pTimes[], struct Process* pSched[], int len) {
-	int tmp;
-	struct Process* pTmp;
-	for (int i = 1; i < len; i++) {
-		int j = i;
-		while (j >= 1 && pTimes[j] < pTimes[j - 1]) {
-			tmp = pTimes[j];
-			pTimes[j] = pTimes[j - 1];
-			pTimes[j - 1] = tmp;
+    int tmp;
+    struct Process* pTmp;
+    for (int i = 1; i < len; i++) {
+        int j = i;
+        while (j >= 1 && pTimes[j] < pTimes[j - 1]) {
+            tmp = pTimes[j];
+            pTimes[j] = pTimes[j - 1];
+            pTimes[j - 1] = tmp;
 
-			pTmp = pSched[j];
-			pSched[j] = pSched[j - 1];
-			pSched[j - 1] = pTmp;
-			j--;
-		}
-	}
+            pTmp = pSched[j];
+            pSched[j] = pSched[j - 1];
+            pSched[j - 1] = pTmp;
+            j--;
+        }
+    }
 }
 
 int main(int argc, char* argv[]) {
-	struct Process* pSched[256];
-	int pTimes[256];
-	int schedLen = 0;
-	if (argc >= 2) {
-		FILE* inFile = fopen(argv[1], "r");
-		if (inFile != NULL) {
-			char pTask[255];
-			int pTime = 0, pPrio = 0;
-			long pDur = 0;
-			fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-			while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
-				pSched[schedLen] = newProcess(pTask, pDur, pPrio);
-				pTimes[schedLen] = pTime;
-				++schedLen;
-				fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-			}
-		}
-	}
-	sortSchedule(pTimes, pSched, schedLen);
-	printf("Processe Insertion Schedule:\n");
-	for (int i = 0; i < schedLen; i++) {
-		if (i == 0 || pTimes[i] != pTimes[i - 1]) {
-			printf("Time = %d\n", pTimes[i]);
-		}
-		printf("\t%s: Duration = %dns, Priority = %d\n",
-				pSched[i]->task, pSched[i]->tLeft, pSched[i]->prio);
-	}
-	printf("\n");
+    struct Process* pSched[256];
+    int pTimes[256];
+    int schedLen = 0;
+    if (argc >= 2) {
+        FILE* inFile = fopen(argv[1], "r");
+        if (inFile != NULL) {
+            char pTask[255];
+            int pTime = 0, pPrio = 0;
+            long pDur = 0;
+            fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
+            while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
+                pSched[schedLen] = newProcess(pTask, pDur, pPrio);
+                pTimes[schedLen] = pTime;
+                ++schedLen;
+                fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
+            }
+        }
+    }
+    sortSchedule(pTimes, pSched, schedLen);
+    printf("Processe Insertion Schedule:\n");
+    for (int i = 0; i < schedLen; i++) {
+        if (i == 0 || pTimes[i] != pTimes[i - 1]) {
+            printf("Time = %d\n", pTimes[i]);
+        }
+        printf("\t%s: Duration = %dns, Priority = %d\n",
+                pSched[i]->task, pSched[i]->tLeft, pSched[i]->prio);
+    }
+    printf("\n");
 
     int active = 1;
     struct QueueList qLists[2];
     init(&qLists[0]);
     init(&qLists[1]);
 
-	int schedIdx = 0;
+    int schedIdx = 0;
     struct timespec dt={0, 100};
     long tLeft = 0;
     struct Loc loc = {-1, -1};
@@ -183,41 +183,41 @@ int main(int argc, char* argv[]) {
             nanosleep(&dt, NULL);
             fflush(stdout);
             tLeft -= dt.tv_nsec;
-			p->tLeft -= dt.tv_nsec;
+            p->tLeft -= dt.tv_nsec;
         }
         // No process or timeslice expired
         if (p == NULL || tLeft <= 0) {
             // Preempt current task
             if (p != NULL) {
-				if (p->tLeft <= 0) {
-					printf("Task Finished: %s\n", p->task);
-					free(p);
-				} else {
+                if (p->tLeft <= 0) {
+                    printf("Task Finished: %s\n", p->task);
+                    free(p);
+                } else {
                     push(p, &qLists[1 - active]);
-				}
+                }
             }
-			// Get location of next
-			getFront(&loc, &qLists[active]);
+            // Get location of next
+            getFront(&loc, &qLists[active]);
             // Check if we should switch queues
             if (loc.qNum == -1 || loc.qIdx == -1) {
                 active = 1 - active;
                 getFront(&loc, &qLists[active]);
             }
-			// Get next process to run
+            // Get next process to run
             p = pop(&loc, &qLists[active]);
-			tLeft = TIMESLICE;
+            tLeft = TIMESLICE;
         }
-		// Simulate new processes
-		while (schedIdx < schedLen && pTimes[schedIdx] == cntr) {
-			push(pSched[schedIdx++], &qLists[active]);
-		}
+        // Simulate new processes
+        while (schedIdx < schedLen && pTimes[schedIdx] == cntr) {
+            push(pSched[schedIdx++], &qLists[active]);
+        }
     }
 
     clean(&qLists[0]);
     clean(&qLists[1]);
-	while (schedIdx < schedLen) {
-		free(pSched[schedIdx++]);
-	}
+    while (schedIdx < schedLen) {
+        free(pSched[schedIdx++]);
+    }
 
     return 0;
 }
