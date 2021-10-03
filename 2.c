@@ -18,7 +18,7 @@ int main() {
         fscanf(tgFile, "%d", &childPID);
         while (!feof(tgFile) && !ferror(tgFile)) {
             if (childPID != pid) {
-                printf("Killing Child: %d", childPID);
+                printf("Killing Child: %d\n", childPID);
                 kill(childPID, SIGKILL);
             }
             fscanf(tgFile, "%d", &childPID);

@@ -10,7 +10,6 @@
 void getMemory(int* virt, int* phys);
 
 int main() {
-    printf("%d\n", PAGE_SIZE);
     int virt = 0, phys = 0;
 
     printf("Initially:\n");
@@ -36,8 +35,6 @@ int main() {
     printf("\nAfter Free():\n");
     getMemory(&virt, &phys);
     printf("Virtual Memory: %dkB\nPhysical Memory: %dkB\n", virt, phys);
-
-    checkSize();
 
     return 0;
 }

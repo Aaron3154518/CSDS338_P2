@@ -40,7 +40,7 @@ int main() {
         free(ptr);
     }
     printf("Smallest Change in Virtual Memory: %dkB\n", minDelta);
-    printf("All Observed Changes in Virtual Memory, Divided by Smallest Change:\n");
+    printf("All Observed Changes in Virtual Memory, Divided by %d:\n", minDelta);
     for (int i = 0; i < num; i++) {
         if (i != 0) {
             printf(", ");
