@@ -6,7 +6,7 @@
 
 #define MAX_SIZE 100
 #define MAX_PRIO 256
-#define TIMESLICE 1000 // ns
+#define TIMESLICE 100 // ns
 
 struct Process {
     char task[255];
@@ -137,26 +137,32 @@ void sortSchedule(int pTimes[], struct Process* pSched[], int len) {
 }
 
 int main(int argc, char* argv[]) {
+    int weightTS = 0;
     struct Process* pSched[256];
     int pTimes[256];
     int schedLen = 0;
-    if (argc >= 2) {
-        FILE* inFile = fopen(argv[1], "r");
-        if (inFile != NULL) {
-            char pTask[255];
-            int pTime = 0, pPrio = 0;
-            long pDur = 0;
-            fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-            while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
-                pSched[schedLen] = newProcess(pTask, pDur, pPrio);
-                pTimes[schedLen] = pTime;
-                ++schedLen;
+    for (int i = 1; i < argc; i++) {
+	if (strcmp(argv[i], "-w") == 0) {
+	    weightTS = 1;
+	} else if (schedLen == 0) {
+            FILE* inFile = fopen(argv[i], "r");
+            if (inFile != NULL) {
+                char pTask[255];
+                int pTime = 0, pPrio = 0;
+                long pDur = 0;
                 fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-            }
+                while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
+                    pSched[schedLen] = newProcess(pTask, pDur, pPrio);
+                    pTimes[schedLen] = pTime;
+                    ++schedLen;
+                    fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
+                }
+	    }
         }
     }
+    printf("Using %s timeslices\n", weightTS == 0 ? "unweighted" : "weighted");
     sortSchedule(pTimes, pSched, schedLen);
-    printf("Processe Insertion Schedule:\n");
+    printf("Process Insertion Schedule:\n");
     for (int i = 0; i < schedLen; i++) {
         if (i == 0 || pTimes[i] != pTimes[i - 1]) {
             printf("Time = %d\n", pTimes[i]);
@@ -172,45 +178,37 @@ int main(int argc, char* argv[]) {
     init(&qLists[1]);
 
     int schedIdx = 0;
-    struct timespec dt={0, 100};
-    long tLeft = 0;
+    struct timespec dt={0, 0};
     struct Loc loc = {-1, -1};
     struct Process* p = NULL;
     int cntr = -1;
     while (++cntr < 10000) {
-        // Run current task
-        if (p != NULL && tLeft > 0) {
-            nanosleep(&dt, NULL);
-            fflush(stdout);
-            tLeft -= dt.tv_nsec;
-            p->tLeft -= dt.tv_nsec;
-        }
-        // No process or timeslice expired
-        if (p == NULL || tLeft <= 0) {
-            // Preempt current task
-            if (p != NULL) {
-                if (p->tLeft <= 0) {
-                    printf("Task Finished: %s\n", p->task);
-                    free(p);
-                } else {
-                    push(p, &qLists[1 - active]);
-                }
-            }
-            // Get location of next
-            getFront(&loc, &qLists[active]);
-            // Check if we should switch queues
-            if (loc.qNum == -1 || loc.qIdx == -1) {
-                active = 1 - active;
-                getFront(&loc, &qLists[active]);
-            }
-            // Get next process to run
-            p = pop(&loc, &qLists[active]);
-            tLeft = TIMESLICE;
-        }
         // Simulate new processes
         while (schedIdx < schedLen && pTimes[schedIdx] == cntr) {
             push(pSched[schedIdx++], &qLists[active]);
         }
+        if (p != NULL) {
+	    dt.tv_nsec = weightTS == 0 ? 100 : ((255 - p->prio) * 80 / 255) + 20;
+	    // Run current task
+            nanosleep(&dt, NULL);
+            p->tLeft -= dt.tv_nsec;
+            // Preempt current task
+            if (p->tLeft <= 0) {
+                printf("Time = %d - Task Finished: %s\n", cntr, p->task);
+                free(p);
+            } else {
+                push(p, &qLists[1 - active]);
+            }
+        }
+        // Get location of next
+        getFront(&loc, &qLists[active]);
+        // Check if we should switch queues
+        if (loc.qNum == -1 || loc.qIdx == -1) {
+            active = 1 - active;
+        getFront(&loc, &qLists[active]);
+        }
+        // Get next process to run
+        p = pop(&loc, &qLists[active]);
     }
 
     clean(&qLists[0]);
