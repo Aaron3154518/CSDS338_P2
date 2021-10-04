@@ -215,12 +215,13 @@ int main(int argc, char* argv[]) {
     int weightTS = 0, help = 0;
     char* file;
     for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-h") == 0) {
-        help = 1;
-    } else if (strcmp(argv[i], "-w") == 0) {
-        weightTS = 1;
-    } else if (strcmp(argv[i], "-f") == 0 && i < argc - 1) {
-        file = argv[++i];
+        if (strcmp(argv[i], "-h") == 0) {
+            help = 1;
+        } else if (strcmp(argv[i], "-w") == 0) {
+            weightTS = 1;
+        } else if (strcmp(argv[i], "-f") == 0 && i < argc - 1) {
+            file = argv[++i];
+        }
     }
     if (argc == 1) { help = 1; }
 
