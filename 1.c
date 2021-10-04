@@ -136,28 +136,21 @@ void sortSchedule(int pTimes[], struct Process* pSched[], int len) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    int weightTS = 0;
+void run(char* file, int weightTS) {
     struct Process* pSched[256];
     int pTimes[256];
     int schedLen = 0;
-    for (int i = 1; i < argc; i++) {
-	if (strcmp(argv[i], "-w") == 0) {
-	    weightTS = 1;
-	} else if (schedLen == 0) {
-            FILE* inFile = fopen(argv[i], "r");
-            if (inFile != NULL) {
-                char pTask[255];
-                int pTime = 0, pPrio = 0;
-                long pDur = 0;
-                fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-                while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
-                    pSched[schedLen] = newProcess(pTask, pDur, pPrio);
-                    pTimes[schedLen] = pTime;
-                    ++schedLen;
-                    fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
-                }
-	    }
+    FILE* inFile = fopen(file, "r");
+    if (inFile != NULL) {
+        char pTask[255];
+        int pTime = 0, pPrio = 0;
+        long pDur = 0;
+        fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
+        while (schedLen < 256 && !ferror(inFile) && !feof(inFile)) {
+            pSched[schedLen] = newProcess(pTask, pDur, pPrio);
+            pTimes[schedLen] = pTime;
+            ++schedLen;
+            fscanf(inFile, "%d %s %d %d", &pTime, pTask, &pDur, &pPrio);
         }
     }
     printf("Using %s timeslices\n", weightTS == 0 ? "unweighted" : "weighted");
@@ -188,8 +181,8 @@ int main(int argc, char* argv[]) {
             push(pSched[schedIdx++], &qLists[active]);
         }
         if (p != NULL) {
-	    dt.tv_nsec = weightTS == 0 ? 100 : ((255 - p->prio) * 80 / 255) + 20;
-	    // Run current task
+            // Run current task
+            dt.tv_nsec = weightTS == 0 ? 100 : ((255 - p->prio) * 80 / 255) + 20;
             nanosleep(&dt, NULL);
             p->tLeft -= dt.tv_nsec;
             // Preempt current task
@@ -205,7 +198,7 @@ int main(int argc, char* argv[]) {
         // Check if we should switch queues
         if (loc.qNum == -1 || loc.qIdx == -1) {
             active = 1 - active;
-        getFront(&loc, &qLists[active]);
+            getFront(&loc, &qLists[active]);
         }
         // Get next process to run
         p = pop(&loc, &qLists[active]);
@@ -215,6 +208,29 @@ int main(int argc, char* argv[]) {
     clean(&qLists[1]);
     while (schedIdx < schedLen) {
         free(pSched[schedIdx++]);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int weightTS = 0, help = 0;
+    char* file;
+    for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-h") == 0) {
+        help = 1;
+    } else if (strcmp(argv[i], "-w") == 0) {
+        weightTS = 1;
+    } else if (strcmp(argv[i], "-f") == 0 && i < argc - 1) {
+        file = argv[++i];
+    }
+    if (argc == 1) { help = 1; }
+
+    if (help == 0) {
+        run(file, weightTS);
+    } else {
+        printf("Usage: ./program-name [-f file] [-w] [h]\n");
+        printf("\t-f file: Specifies a file that contains processes to run. Processes are parsed in the format: timeslice# task-name task-duration task-priority\n");
+        printf("\t-w: Uses weighted timeslices according to the formula: ts = ((255 - priority) * 80 / 255) + 20\n");
+        printf("\t-h: Displays this usage message.\n");
     }
 
     return 0;
