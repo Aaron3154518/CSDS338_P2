@@ -229,7 +229,8 @@ int main(int argc, char* argv[]) {
         run(file, weightTS);
     } else {
         printf("Usage: ./program-name [-f file] [-w] [h]\n");
-        printf("\t-f file: Specifies a file that contains processes to run. Processes are parsed in the format: timeslice# task-name task-duration task-priority\n");
+        printf("\t-f file: Specifies a file that contains processes to run.\n");
+	printf("\t         Processes are parsed in the format: timeslice# task-name task-duration task-priority\n");
         printf("\t-w: Uses weighted timeslices according to the formula: ts = ((255 - priority) * 80 / 255) + 20\n");
         printf("\t-h: Displays this usage message.\n");
     }
