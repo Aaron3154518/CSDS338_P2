@@ -1,3 +1,4 @@
 *
 !.gitignore
 !*.c
+!1*.txt
